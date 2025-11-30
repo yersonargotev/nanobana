@@ -57,7 +57,7 @@ export NANOBANANA_MODEL=gemini-3-pro-image-preview
 Install the extension using the `gemini extensions install` command:
 
 ```bash
-gemini extensions install https://github.com/gemini-cli-extensions/nanobanana
+gemini extensions install https://github.com/yersonargotev/nanobanana.git
 ```
 
 ### 2. Activate
@@ -67,6 +67,7 @@ Restart the Gemini CLI. The following commands will be available:
 - `/generate` - Single or multiple image generation with style/variation options
 - `/edit` - Image editing
 - `/restore` - Image restoration
+- `/remix` - Combine multiple images with text instructions
 - `/icon` - Generate app icons, favicons, and UI elements in multiple sizes
 - `/pattern` - Generate seamless patterns and textures for backgrounds
 - `/story` - Generate sequential images that tell a visual story or process
@@ -107,6 +108,23 @@ The extension provides multiple command options for different use cases:
 ```bash
 /restore old_family_photo.jpg "remove scratches and improve clarity"
 /restore damaged_photo.png "enhance colors and fix tears" --preview
+```
+
+**Remix Images:**
+
+```bash
+# Basic remix with two images
+/remix #photo1.jpg #photo2.jpg "blend them into a surreal landscape"
+
+# Multiple images with preview
+/remix #face.jpg #landscape.jpg #texture.jpg "create a fantasy portrait" --preview
+
+# Complex artistic combination
+/remix #sketch.png #reference.jpg "transform into a watercolor painting"
+
+# Creative composites
+/remix #building.jpg #sunset.jpg "merge into a futuristic cityscape"
+/remix #portrait.jpg #painting.jpg "apply artistic style transfer"
 ```
 
 **Generate Icons:**
@@ -169,6 +187,7 @@ The extension provides multiple command options for different use cases:
 /nanobanana create a logo for my tech startup
 /nanobanana I need 5 different versions of a cat illustration in various art styles
 /nanobanana fix the lighting in sunset.jpg and make it more vibrant
+/nanobanana remix these two vacation photos into a dreamy composite
 ```
 
 ## 🎨 Advanced Generation Options
