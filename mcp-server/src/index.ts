@@ -157,6 +157,31 @@ class NanoBananaServer {
             },
           },
           {
+            name: 'remix_image',
+            description: 'Remix multiple images into a new one based on a text prompt',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                prompt: {
+                  type: 'string',
+                  description: 'The text prompt describing the new image',
+                },
+                files: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  description: 'Array of filenames of the input images to remix',
+                },
+                preview: {
+                  type: 'boolean',
+                  description:
+                    'Automatically open generated images in default viewer',
+                  default: false,
+                },
+              },
+              required: ['prompt', 'files'],
+            },
+          },
+          {
             name: 'generate_icon',
             description:
               'Generate app icons, favicons, and UI elements in multiple sizes and formats',
@@ -455,6 +480,20 @@ class NanoBananaServer {
                 (args?.['no-preview'] as boolean),
             };
             response = await this.imageGenerator.editImage(restoreRequest);
+            break;
+          }
+
+          case 'remix_image': {
+            const remixRequest: ImageGenerationRequest = {
+              prompt: args?.prompt as string,
+              inputImages: args?.files as string[],
+              mode: 'remix',
+              preview: args?.preview as boolean,
+              noPreview:
+                (args?.noPreview as boolean) ||
+                (args?.['no-preview'] as boolean),
+            };
+            response = await this.imageGenerator.remixImage(remixRequest);
             break;
           }
 

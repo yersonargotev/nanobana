@@ -657,4 +657,89 @@ generatedFiles.push(fullPath);
       };
     }
   }
+
+  async remixImage(
+    request: ImageGenerationRequest,
+  ): Promise<ImageGenerationResponse> {
+    try {
+      if (!request.inputImages || request.inputImages.length < 2) {
+        return {
+          success: false,
+          message: 'At least two input images are required for a remix.',
+          error: 'Missing or insufficient inputImages parameter',
+        };
+      }
+
+      const outputPath = FileHandler.ensureOutputDirectory();
+      const parts: ({ text: string } | { inlineData: { data: string, mimeType: string } })[] = [{ text: request.prompt }];
+
+      for (const imagePath of request.inputImages) {
+        const fileResult = FileHandler.findInputFile(imagePath);
+        if (!fileResult.found) {
+          return {
+            success: false,
+            message: `Input image not found: ${imagePath}`,
+            error: `Searched in: ${fileResult.searchedPaths.join(', ')}`,
+          };
+        }
+        const imageBase64 = await FileHandler.readImageAsBase64(fileResult.filePath!);
+        parts.push({
+          inlineData: {
+            data: imageBase64,
+            mimeType: 'image/png', // Assuming PNG, adjust if needed
+          },
+        });
+      }
+
+      const response = await this.ai.models.generateContent({
+        model: this.modelName,
+        contents: [{ role: 'user', parts }],
+      });
+
+      if (response.candidates && response.candidates[0]?.content?.parts) {
+        const generatedFiles: string[] = [];
+        for (const part of response.candidates[0].content.parts) {
+          let resultImageBase64: string | undefined;
+          if (part.inlineData?.data) {
+            resultImageBase64 = part.inlineData.data;
+          } else if (part.text && this.isValidBase64ImageData(part.text)) {
+            resultImageBase64 = part.text;
+          }
+
+          if (resultImageBase64) {
+            const filename = FileHandler.generateFilename(
+              `remix_${request.prompt}`,
+              'png',
+              0,
+            );
+            const fullPath = await FileHandler.saveImageFromBase64(
+              resultImageBase64,
+              outputPath,
+              filename,
+            );
+            generatedFiles.push(fullPath);
+            await this.handlePreview(generatedFiles, request);
+            return {
+              success: true,
+              message: 'Successfully remixed images.',
+              generatedFiles,
+            };
+          }
+        }
+      }
+
+      return {
+        success: false,
+        message: 'Failed to remix images.',
+        error: 'No image data in response from model.',
+      };
+    } catch (error: unknown) {
+      console.error('DEBUG - Error in remixImage:', error);
+      return {
+        success: false,
+        message: 'Failed to remix images.',
+        error: this.handleApiError(error),
+      };
+    }
+  }
 }
